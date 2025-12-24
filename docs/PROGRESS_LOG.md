@@ -211,10 +211,93 @@ Google スプレッドシートに `records` シートと `status` シートを�
 
 ---
 
+### 2025-12-03 22:30 - GitHub へのプッシュ
+
+**プロンプト/作業内容:**
+- Git リポジトリを初期化
+- GitHub に新規リポジトリを作成（khayami66/point-system）
+- コードをプッシュ
+
+**結果:**
+成功（エラー発生後に解決）
+
+**エラー内容:**
+```
+error: remote origin already exists.
+remote: Repository not found.
+```
+
+**解決策:**
+既存のリモート設定を削除し、正しいURLで再登録：
+```bash
+git remote remove origin
+git remote add origin https://github.com/khayami66/point-system.git
+git push -u origin main
+```
+
+---
+
+### 2025-12-03 22:39 - Render へのデプロイ
+
+**プロンプト/作業内容:**
+- Render で新規 Web Service を作成
+- GitHub リポジトリ（khayami66/point-system）を連携
+- 環境変数を設定（LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET, SPREADSHEET_ID, GOOGLE_SERVICE_ACCOUNT_JSON）
+- デプロイ実行
+
+**設定内容:**
+| 項目 | 設定値 |
+|------|--------|
+| Name | point-system |
+| Runtime | Python 3 |
+| Build Command | pip install -r requirements.txt |
+| Start Command | gunicorn app:app |
+| Instance Type | Free |
+
+**結果:**
+成功
+
+**デプロイ先URL:**
+`https://point-system-eg8k.onrender.com`
+
+---
+
+### 2025-12-03 22:45 - LINE Webhook URL 更新と本番テスト
+
+**プロンプト/作業内容:**
+- LINE Developers Console で Webhook URL を更新
+- Webhook URL: `https://point-system-eg8k.onrender.com/callback`
+- LINE アプリから本番環境でのテスト実施
+
+**結果:**
+成功
+
+**テスト結果:**
+1. 「スタスタ」送信 → 記録成功（+3pt）
+2. 「宿題」送信 → 記録成功（+1pt）
+3. 「ごみ捨て」送信 → 未対応キーワードのヘルプメッセージ表示
+4. 「今日のポイント」送信 → 集計表示（8pt: 宿題2回、スタスタ2回）
+
+**確認済み機能:**
+- 行動記録機能
+- 未対応キーワードへの応答
+- 今日のポイント確認機能
+- Google Sheets への記録保存
+
+---
+
 ## 現在のステータス
 
-- **ローカル動作確認**: 完了
-- **次のステップ**: Render へのデプロイ
+- **v1 本番デプロイ**: 完了
+- **本番URL**: https://point-system-eg8k.onrender.com
+- **ステータス**: Live（稼働中）
+
+---
+
+## 注意事項
+
+- Render 無料プランでは、15分間アクセスがないとスリープ状態になる
+- 次のアクセス時に起動まで30秒〜1分かかる
 
 ---
 
