@@ -1,40 +1,25 @@
-# 開発進捗ログ：ごほうびポイント管理Bot
+# 開発進捗ログ：ごほうびポイント管理システム
 
 このドキュメントでは、開発の進捗を時系列で記録します。
-プロンプト文、発生したエラー、およびその解決策を記録していきます。
 
 ---
 
-## 記録フォーマット
+## 目次
 
-```
-### YYYY-MM-DD HH:MM - タイトル
-
-**プロンプト/作業内容:**
-（実施した作業やプロンプトの内容）
-
-**結果:**
-（成功/エラーなど）
-
-**エラー内容:（該当する場合）**
-（エラーメッセージ）
-
-**解決策:（該当する場合）**
-（解決方法）
-```
+1. [Phase 0: LINE Bot開発（v1）](#phase-0-line-bot開発v1)
+2. [Webアプリ開発 壁打ち](#webアプリ開発-壁打ち)
+3. [Phase 0: Webアプリ基盤構築](#phase-0-webアプリ基盤構築)
+4. [Phase 1: MVP（設定画面）](#phase-1-mvp設定画面)
 
 ---
 
-## 開発ログ
+## Phase 0: LINE Bot開発（v1）
 
 ### 2025-12-03 - プロジェクト開始
 
-**プロンプト/作業内容:**
+**作業内容:**
 - ChatGPT との壁打ち結果をもとに要件定義の確認を実施
 - 技術構成、データ構造、機能仕様を確定
-
-**結果:**
-成功
 
 **決定事項:**
 - フレームワーク: Flask
@@ -44,51 +29,16 @@
 
 ---
 
-### 2025-12-03 - 要件定義書作成
-
-**プロンプト/作業内容:**
-- REQUIREMENTS.md を作成
-- 機能一覧、データ構造、環境変数などを文書化
-
-**結果:**
-成功
-
-**作成ファイル:**
-- `docs/REQUIREMENTS.md`
-
----
-
-### 2025-12-03 - 進捗ログ作成
-
-**プロンプト/作業内容:**
-- PROGRESS_LOG.md を作成
-- 開発進捗を時系列で記録するためのフォーマットを定義
-
-**結果:**
-成功
-
-**作成ファイル:**
-- `docs/PROGRESS_LOG.md`
-
----
-
 ### 2025-12-03 - アプリケーション実装完了
 
-**プロンプト/作業内容:**
-- プロジェクト構成ファイルの作成
+**作業内容:**
 - Flask アプリケーション基盤の実装
 - Google Sheets API 連携モジュールの実装
 - LINE Messaging API 連携の実装
 - メッセージ処理ロジックの実装
-- Render デプロイ用設定ファイルの作成
-
-**結果:**
-成功
 
 **作成ファイル:**
 - `requirements.txt` - Python依存パッケージ
-- `.env.example` - 環境変数テンプレート
-- `.gitignore` - Git除外設定
 - `config.py` - アプリケーション設定
 - `sheets_service.py` - Google Sheets操作
 - `message_handler.py` - メッセージ処理ロジック
@@ -105,200 +55,295 @@
 
 ---
 
-### 2025-12-03 - 環境構築とローカル起動テスト
+### 2025-12-03 - 本番デプロイ完了
 
-**プロンプト/作業内容:**
-- `.env` ファイルに認証情報を設定
-- `python app.py` を実行してローカルサーバーを起動
+**作業内容:**
+- GitHub リポジトリ作成（khayami66/point-system）
+- Render で Web Service を作成・デプロイ
+- LINE Webhook URL 設定
 
-**結果:**
-成功（エラー発生後に解決）
-
-**エラー内容1:**
-```
-ModuleNotFoundError: No module named 'linebot.v3'
-```
-
-**解決策1:**
-VS Code が Python 3.13 を使用していたため、line-bot-sdk がインストールされていなかった。
-VS Code の右下から Python 3.11.9 を選択することで解決。
-
-**エラー内容2:**
-```
-gspread.exceptions.APIError: {'code': 403, 'message': 'The caller does not have permission', 'status': 'PERMISSION_DENIED'}
-```
-
-**解決策2:**
-Google スプレッドシートをサービスアカウントのメールアドレスに共有（編集者権限）することで解決。
-共有先: `point-system@vital-chiller-456712-u5.iam.gserviceaccount.com`
-
-**最終結果:**
-Flask サーバーがポート 5000 で正常に起動。Google Sheets への接続も成功。
+**本番環境:**
+- URL: https://point-system-eg8k.onrender.com
+- ステータス: Live（稼働中）
 
 ---
 
-### 2025-12-03 06:26 - ngrok によるローカルテスト開始
+## Webアプリ開発 壁打ち
 
-**プロンプト/作業内容:**
-- ngrok を使用してローカルサーバーを外部公開
-- LINE Developers で Webhook URL を設定
-- LINE アプリからメッセージ送信テスト
+### 2025-12-26 - Webアプリ化の検討
 
-**結果:**
-エラー発生
+**目的:**
+LINE Botと連携し、各家庭でカスタマイズ可能なWebアプリを開発する
 
-**エラー内容:**
-```
-ステータス取得エラー: status
-今日の記録取得エラー: records
-```
+**壁打ちで決定した事項:**
 
-**解決策:**
-Google スプレッドシートに `records` シートと `status` シートを作成。
-ヘッダー行を追加：
-- records: date, time, child_id, action, points, memo
-- status: child_id, total_points, cycle_points
+| 項目 | 決定内容 |
+|------|----------|
+| 対象ユーザー | 年長〜小学校低学年の子を持つ保護者 |
+| LINE Bot | 継続利用（日常の行動記録用） |
+| Webアプリ | 新規作成（設定・閲覧用） |
+| 認証 | 保護者: LINE/Google、子ども: URL共有（ログイン不要） |
+| URL形式 | ランダム文字列（推測困難） |
+| UI方針 | モバイルファースト |
+| DB | Supabase (PostgreSQL) |
+| フロントエンド | Next.js (React) |
+| ホスティング | Vercel |
 
----
+**MVP（最小機能）:**
+- 設定画面（行動・ポイントのカスタマイズ）
 
-### 2025-12-03 06:26 - シート作成後のテスト
+**将来の拡張:**
+1. 成果確認画面（グラフ・カレンダー）
+2. バッジ・称号
+3. レベルアップシステム
+4. アバター・キャラクター育成（進化式）
 
-**プロンプト/作業内容:**
-- シート作成後に再度テスト実行
-
-**結果:**
-エラー発生
-
-**エラー内容:**
-```
-ステータス取得エラー: list index out of range
-```
-
-**解決策:**
-`sheets_service.py` の `get_status` および `update_status` メソッドを修正。
-`get_all_records()` ではなく `get_all_values()` を使用し、
-ヘッダー行のみの空シートでも正常に動作するよう対応。
-
-**修正ファイル:**
-- `sheets_service.py`
+**設計書作成:**
+- `docs/WEB_APP_DESIGN.md` - 詳細設計書
+- `docs/ROADMAP.md` - 開発ロードマップ
 
 ---
 
-### 2025-12-03 06:36 - LINE Bot 動作確認成功
+## Phase 0: Webアプリ基盤構築
 
-**プロンプト/作業内容:**
-- 修正後に LINE アプリから再テスト
+### 2025-12-26 - Supabaseプロジェクト作成
 
-**結果:**
-成功
+**作業内容:**
+- Supabaseアカウント作成
+- プロジェクト初期化（Region: Northeast Asia Tokyo）
 
-**テスト結果:**
-1. 「宿題やった」送信
-   - ステータス新規作成（child_01）
-   - 記録追加: 宿題 (1pt)
-   - 返信: 「✅ 宿題を記録しました！（+1pt）今日は 1pt、累計は 1pt です。」
-
-2. 「スタスタ」送信
-   - 記録追加: スタスタ (3pt)
-   - 返信: 「✅ スタスタを記録しました！（+3pt）今日は 4pt、累計は 4pt です。」
-
-**確認済み機能:**
-- 行動記録機能（宿題、スタスタ）
-- ポイント加算
-- Google Sheets への記録保存
-- ステータス（累計・周回ポイント）の管理
-- LINE への返信送信
+**設定:**
+- Project URL: https://vvgafozdvejejwnsasvo.supabase.co
+- 環境変数を `.env` に追加
 
 ---
 
-### 2025-12-03 22:30 - GitHub へのプッシュ
+### 2025-12-26 - データベース設計・構築
 
-**プロンプト/作業内容:**
-- Git リポジトリを初期化
-- GitHub に新規リポジトリを作成（khayami66/point-system）
-- コードをプッシュ
+**作業内容:**
+- Supabase SQL EditorでDDLを実行
+- 6テーブルを作成
 
-**結果:**
-成功（エラー発生後に解決）
+**作成テーブル:**
 
-**エラー内容:**
-```
-error: remote origin already exists.
-remote: Repository not found.
-```
+| テーブル | 説明 |
+|----------|------|
+| families | 家庭情報、共有コード |
+| children | 子どもの名前、ポイント |
+| actions | 行動マスタ（行動名、ポイント数） |
+| records | 行動記録 |
+| goals | 目標（ごほうび内容） |
+| user_families | ユーザーと家庭の紐付け |
 
-**解決策:**
-既存のリモート設定を削除し、正しいURLで再登録：
+**設定:**
+- Row Level Security (RLS) 有効化
+- 各テーブルにアクセスポリシー設定
+- updated_at 自動更新トリガー作成
+
+---
+
+### 2025-12-26 - Next.jsプロジェクト作成
+
+**作業内容:**
+- `web/` ディレクトリにNext.jsプロジェクト作成
+- Supabaseクライアントライブラリインストール
+
+**コマンド:**
 ```bash
-git remote remove origin
-git remote add origin https://github.com/khayami66/point-system.git
-git push -u origin main
+npx create-next-app@latest web --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm
+npm install @supabase/supabase-js @supabase/ssr
 ```
+
+**作成ファイル:**
+- `web/src/lib/supabase.ts` - ブラウザ用クライアント
+- `web/src/lib/supabase-server.ts` - サーバー用クライアント
+- `web/src/types/database.ts` - 型定義
+- `web/src/middleware.ts` - 認証ミドルウェア
 
 ---
 
-### 2025-12-03 22:39 - Render へのデプロイ
+### 2025-12-26 - 認証設定
 
-**プロンプト/作業内容:**
-- Render で新規 Web Service を作成
-- GitHub リポジトリ（khayami66/point-system）を連携
-- 環境変数を設定（LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET, SPREADSHEET_ID, GOOGLE_SERVICE_ACCOUNT_JSON）
-- デプロイ実行
+**作業内容:**
+- Google OAuth設定（Google Cloud Console）
+- Supabase Authentication設定
 
 **設定内容:**
-| 項目 | 設定値 |
-|------|--------|
-| Name | point-system |
-| Runtime | Python 3 |
-| Build Command | pip install -r requirements.txt |
-| Start Command | gunicorn app:app |
-| Instance Type | Free |
+- Google Cloud ConsoleでOAuthクライアントID作成
+- Supabase ProvidersでGoogle認証を有効化
+- リダイレクトURI設定
 
-**結果:**
-成功
-
-**デプロイ先URL:**
-`https://point-system-eg8k.onrender.com`
+**作成ファイル:**
+- `web/src/app/login/page.tsx` - ログインページ
+- `web/src/app/auth/callback/route.ts` - 認証コールバック
+- `web/src/app/auth/signout/route.ts` - ログアウト
 
 ---
 
-### 2025-12-03 22:45 - LINE Webhook URL 更新と本番テスト
+### 2025-12-26 - Vercelデプロイ
 
-**プロンプト/作業内容:**
-- LINE Developers Console で Webhook URL を更新
-- Webhook URL: `https://point-system-eg8k.onrender.com/callback`
-- LINE アプリから本番環境でのテスト実施
+**作業内容:**
+- GitHubにコードプッシュ
+- Vercelプロジェクト作成
+- 環境変数設定
+- 初回デプロイ
 
-**結果:**
-成功
+**設定:**
+- Root Directory: `web`
+- Framework: Next.js
+- 環境変数: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-**テスト結果:**
-1. 「スタスタ」送信 → 記録成功（+3pt）
-2. 「宿題」送信 → 記録成功（+1pt）
-3. 「ごみ捨て」送信 → 未対応キーワードのヘルプメッセージ表示
-4. 「今日のポイント」送信 → 集計表示（8pt: 宿題2回、スタスタ2回）
+**本番URL:**
+- https://point-system-web.vercel.app
 
-**確認済み機能:**
-- 行動記録機能
-- 未対応キーワードへの応答
-- 今日のポイント確認機能
-- Google Sheets への記録保存
+**動作確認:**
+- Googleログイン: 成功
+
+---
+
+## Phase 1: MVP（設定画面）
+
+### 2025-12-26 - 家庭の初期設定・ユーザー連携
+
+**作業内容:**
+- 初回ログイン時に家庭（family）を自動作成
+- ユーザーと家庭の紐付け
+- ランダムな共有コード生成
+
+**作成ファイル:**
+- `web/src/lib/family.ts` - 家庭管理ユーティリティ
+
+**更新ファイル:**
+- `web/src/app/dashboard/page.tsx` - ダッシュボード改良
+
+---
+
+### 2025-12-26 - 子ども登録画面
+
+**作業内容:**
+- 子どもの追加・編集・削除機能
+- 名前・ニックネームの入力
+
+**作成ファイル:**
+- `web/src/app/settings/children/page.tsx`
+
+**機能:**
+- 子どもリスト表示
+- 追加フォーム
+- 編集機能
+- 削除機能（確認ダイアログ付き）
+
+---
+
+### 2025-12-26 - 行動マスタ設定画面
+
+**作業内容:**
+- 行動の追加・編集・削除機能
+- ポイント数の設定
+- 有効/無効の切り替え
+
+**作成ファイル:**
+- `web/src/app/settings/actions/page.tsx`
+
+**機能:**
+- 行動リスト表示
+- 行動名・ポイント数入力
+- 有効/無効トグル（チェックボックス）
+- 編集・削除機能
+
+---
+
+### 2025-12-26 - 目標設定画面
+
+**作業内容:**
+- 目標（ごほうび）の追加・編集・削除機能
+- 必要ポイント数の設定（任意）
+- 達成済みチェック
+
+**作成ファイル:**
+- `web/src/app/settings/goals/page.tsx`
+
+**機能:**
+- 目標リスト表示
+- 目標タイトル・詳細・必要ポイント入力
+- 達成済みトグル
+- 編集・削除機能
+
+---
+
+### 2025-12-26 - 共有URL発行
+
+**作業内容:**
+- 子ども用閲覧URLの表示
+- URLコピー機能
+
+**作成ファイル:**
+- `web/src/app/settings/share/page.tsx`
+
+**機能:**
+- 共有URL表示
+- クリップボードへコピー
+- 注意事項表示
+
+---
+
+### 2025-12-26 - Phase 1 デプロイ完了
+
+**作業内容:**
+- GitHubにプッシュ
+- Vercel自動デプロイ
+
+**コミット:**
+```
+Add Phase 1 MVP settings pages
+
+- Add family auto-creation on first login
+- Add children settings page (CRUD)
+- Add actions/points settings page (CRUD)
+- Add goals settings page (CRUD)
+- Add share URL page for child viewing
+- Update dashboard with status indicators
+```
+
+**動作確認:**
+- ダッシュボード表示: 成功
+- 子ども登録: 成功
+- 行動・ポイント設定: 成功
+- 目標設定: 成功
+- 共有URL確認: 成功
+- コンソールエラー: なし
 
 ---
 
 ## 現在のステータス
 
-- **v1 本番デプロイ**: 完了
-- **本番URL**: https://point-system-eg8k.onrender.com
-- **ステータス**: Live（稼働中）
+### LINE Bot (v1)
+- **ステータス**: 稼働中
+- **URL**: https://point-system-eg8k.onrender.com
+- **データ**: Google Sheets
+
+### Webアプリ (Phase 1完了)
+- **ステータス**: 稼働中
+- **URL**: https://point-system-web.vercel.app
+- **データ**: Supabase
+
+### 次のステップ
+- **Phase 2**: LINE Bot連携（Supabase接続）
 
 ---
 
-## 注意事項
+## 技術スタック
 
-- Render 無料プランでは、15分間アクセスがないとスリープ状態になる
-- 次のアクセス時に起動まで30秒〜1分かかる
+| レイヤー | 技術 | ホスティング |
+|----------|------|--------------|
+| LINE Bot | Python + Flask | Render |
+| Webアプリ | Next.js (React) + TypeScript | Vercel |
+| データベース | Supabase (PostgreSQL) | Supabase Cloud |
+| 認証 | Supabase Auth (Google OAuth) | - |
+| スタイリング | Tailwind CSS | - |
 
 ---
 
-<!-- 以降、開発作業のログを追記していく -->
+## リポジトリ
+
+- GitHub: https://github.com/khayami66/point-system
