@@ -1,6 +1,11 @@
 """
 ごほうびポイント管理Bot - メインアプリケーション
 LINE Messaging API Webhook サーバー
+
+v2: Supabase対応版
+- DATA_SOURCE環境変数で切り替え可能
+- 'supabase': Supabase使用（デフォルト）
+- 'sheets': Google Sheets使用（v1互換）
 """
 import logging
 from flask import Flask, request, abort
@@ -19,8 +24,6 @@ from linebot.v3.webhooks import (
 from linebot.v3.exceptions import InvalidSignatureError
 
 from config import Config
-from sheets_service import SheetsService
-from message_handler import MessageHandler
 
 # ロギング設定
 logging.basicConfig(
@@ -37,17 +40,33 @@ configuration = Configuration(access_token=Config.LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(Config.LINE_CHANNEL_SECRET)
 
 # サービス初期化
-sheets_service = None
+data_service = None
 message_handler = None
+use_supabase = Config.DATA_SOURCE == 'supabase'
 
 
 def initialize_services():
     """サービスを初期化"""
-    global sheets_service, message_handler
+    global data_service, message_handler, use_supabase
+
     try:
-        sheets_service = SheetsService()
-        message_handler = MessageHandler(sheets_service)
-        logger.info("サービスの初期化が完了しました")
+        if use_supabase:
+            # Supabase版
+            from supabase_service import SupabaseService
+            from message_handler_v2 import MessageHandlerV2
+
+            data_service = SupabaseService()
+            message_handler = MessageHandlerV2(data_service)
+            logger.info("Supabaseサービスの初期化が完了しました")
+        else:
+            # Google Sheets版（v1互換）
+            from sheets_service import SheetsService
+            from message_handler import MessageHandler
+
+            data_service = SheetsService()
+            message_handler = MessageHandler(data_service)
+            logger.info("Google Sheetsサービスの初期化が完了しました")
+
     except Exception as e:
         logger.error(f"サービス初期化エラー: {e}")
         raise
@@ -85,7 +104,8 @@ def handle_text_message(event):
     global message_handler
 
     user_message = event.message.text
-    logger.info(f"メッセージ受信: {user_message}")
+    user_id = event.source.user_id  # LINEユーザーID
+    logger.info(f"メッセージ受信: {user_message} from {user_id}")
 
     # サービスが初期化されていない場合
     if message_handler is None:
@@ -99,9 +119,16 @@ def handle_text_message(event):
 
     # メッセージを処理
     try:
-        reply_text = message_handler.handle_message(user_message)
+        if use_supabase:
+            # Supabase版はLINEユーザーIDを渡す
+            reply_text = message_handler.handle_message(user_message, user_id)
+        else:
+            # Google Sheets版（v1互換）
+            reply_text = message_handler.handle_message(user_message)
     except Exception as e:
         logger.error(f"メッセージ処理エラー: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         reply_text = "エラーが発生しました。しばらくしてからもう一度お試しください。"
 
     _send_reply(event.reply_token, reply_text)
