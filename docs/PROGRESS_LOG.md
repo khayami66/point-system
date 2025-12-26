@@ -315,12 +315,105 @@ Add Phase 1 MVP settings pages
 
 ---
 
+## Phase 2: LINE Bot連携（Supabase接続）
+
+### 2025-12-26 - Supabaseサービス実装
+
+**作業内容:**
+- LINE Bot用Supabaseサービスクラス作成
+- LINEユーザーと家庭の紐付けテーブル作成
+
+**作成ファイル:**
+- `supabase_service.py` - Supabase操作クラス
+
+**作成テーブル:**
+
+| テーブル | 説明 |
+|----------|------|
+| line_user_families | LINEユーザーIDと家庭の紐付け |
+
+**実装メソッド:**
+- `get_family_by_line_user()` - LINEユーザーから家庭取得
+- `link_line_user_to_family()` - 共有コードで紐付け
+- `get_actions()` - 家庭の行動マスタ取得
+- `get_children()` - 家庭の子どもリスト取得
+- `add_record()` - 行動記録追加
+- `update_child_points()` - ポイント更新
+- `get_today_summary()` - 今日のサマリー取得
+- `get_goals()` - 目標リスト取得
+
+---
+
+### 2025-12-26 - メッセージハンドラーv2実装
+
+**作業内容:**
+- Supabase対応のメッセージ処理クラス作成
+- 家庭紐付けコマンド対応
+
+**作成ファイル:**
+- `message_handler_v2.py` - Supabase版メッセージ処理
+
+**新機能:**
+- 「登録 {共有コード}」コマンドで家庭紐付け
+- Supabaseから行動マスタを動的に取得
+- 子ども名の表示対応
+- 目標表示機能
+
+---
+
+### 2025-12-26 - データソース切り替え対応
+
+**作業内容:**
+- app.pyをSupabase/Sheets両対応に更新
+- config.pyにSupabase設定追加
+- requirements.txtにsupabaseライブラリ追加
+
+**更新ファイル:**
+- `app.py` - データソース切り替えロジック
+- `config.py` - SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DATA_SOURCE追加
+- `requirements.txt` - supabase==2.10.0追加
+
+**環境変数:**
+
+| 変数名 | 説明 |
+|--------|------|
+| SUPABASE_URL | SupabaseプロジェクトURL |
+| SUPABASE_SERVICE_ROLE_KEY | サービスロールキー |
+| DATA_SOURCE | 'supabase' or 'sheets' |
+
+---
+
+### 2025-12-26 - Phase 2 デプロイ
+
+**作業内容:**
+- GitHubにプッシュ
+- Render環境変数設定（待ち）
+
+**コミット:**
+```
+Add Supabase integration for LINE Bot (Phase 2)
+
+- Add supabase_service.py for database operations
+- Add message_handler_v2.py for Supabase-based message handling
+- Update app.py to support both Supabase and Google Sheets data sources
+- Update config.py with Supabase configuration
+- Add supabase library to requirements.txt
+- Support LINE user to family linking via share code
+```
+
+**Renderに設定する環境変数:**
+- SUPABASE_URL
+- SUPABASE_SERVICE_ROLE_KEY
+- DATA_SOURCE=supabase
+
+---
+
 ## 現在のステータス
 
-### LINE Bot (v1)
-- **ステータス**: 稼働中
+### LINE Bot (v2)
+- **ステータス**: デプロイ待ち
 - **URL**: https://point-system-eg8k.onrender.com
-- **データ**: Google Sheets
+- **データ**: Supabase（環境変数設定後）
 
 ### Webアプリ (Phase 1完了)
 - **ステータス**: 稼働中
@@ -328,7 +421,8 @@ Add Phase 1 MVP settings pages
 - **データ**: Supabase
 
 ### 次のステップ
-- **Phase 2**: LINE Bot連携（Supabase接続）
+- **Phase 2完了後**: LINE Bot動作テスト
+- **Phase 3**: 子ども用閲覧ページ（/view/[shareCode]）
 
 ---
 
