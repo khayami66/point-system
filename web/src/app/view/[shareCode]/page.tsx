@@ -25,7 +25,6 @@ export default function ViewPage() {
 
   const [children, setChildren] = useState<Child[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
-  const [familyName, setFamilyName] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -41,7 +40,7 @@ export default function ViewPage() {
       // 共有コードから家庭を取得
       const { data: family, error: familyError } = await supabase
         .from('families')
-        .select('id, name')
+        .select('id')
         .eq('share_code', shareCode)
         .single()
 
@@ -50,8 +49,6 @@ export default function ViewPage() {
         setIsLoading(false)
         return
       }
-
-      setFamilyName(family.name || '')
 
       // 子どもリストを取得
       const { data: childrenData } = await supabase
